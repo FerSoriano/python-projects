@@ -8,15 +8,16 @@ import pandas as pd
 import numpy as np
 import os
 
-#TODO: Crear PR y mandar a Github.
+#TODO: Agregar las instancias para las tarjetas de credito.
 #TODO: Gestionar los errores con mensajes personalizados. ie: Error al cargar. El libro se encuentra abierto.
 
 class AdminGastos():
-    def __init__(self, nombre_tarjeta, conceptos = dict, ruta = '', pdf_folder = '', download_file = '', pdf_log_folder = '',
+    def __init__(self, nombre_tarjeta, sheet_name, conceptos = dict, ruta = '', pdf_folder = '', download_file = '', pdf_log_folder = '',
                  pdf_name = '', pdf_path = '', excel_file = '', csv_temps = '') -> None:
 
         self.conceptos = conceptos
         self.nombre_tarjera = nombre_tarjeta
+        self.sheet_name = sheet_name
         self.ruta = ruta
         self.pdf_folder = pdf_folder
         self.download_file = Path(download_file)
@@ -28,7 +29,7 @@ class AdminGastos():
         self.last_month = (dt.date.today().replace(day=1) - dt.timedelta(days=1))
 
         if ruta == '':
-            self.ruta = 'D:\Proyectos\Python\Personal\Administrador_Gastos\\'
+            self.ruta = 'D:\Proyectos\python-projects\Administrador_Gastos\\'
 
         if pdf_folder == '':
             self.pdf_folder = Path(f'{self.ruta}PDF\\')
@@ -163,7 +164,7 @@ class AdminGastos():
 
     def add_update_excel(self):
         df = pd.read_csv(self.csv_temps[0])
-        sheet_name = 'records_' + self.nombre_tarjera
+        sheet_name = 'records_' + self.sheet_name
         with pd.ExcelWriter(self.excel_file,mode="a",engine="openpyxl", if_sheet_exists='overlay') as writer:
             rows = writer.sheets[sheet_name].max_row
             df.to_excel(writer, sheet_name=sheet_name, header=None, startrow=rows, index=False)
@@ -180,12 +181,9 @@ conceptos = {
             "Gastos Fijos": ['pago de servicio', 'deposito inversion perfiles', 'microsoft', 'banco invex']
             }
 
-#TODO: Agregar una hoja de pruebas en el Excel. Para empezar el desarrollo de las de credito.
 # cd.clear_downloads()
-# tarjeta_debito = AdminGastos(nombre_tarjeta='debito', conceptos=conceptos)
+tarjeta_debito = AdminGastos(nombre_tarjeta='debito', sheet_name='test',conceptos=conceptos)
 # tarjeta_debito.move_pdf()
-# tarjeta_debito.extract_pdf()
-# tarjeta_debito.add_update_excel()
-
-print('hola')
+tarjeta_debito.extract_pdf()
+tarjeta_debito.add_update_excel()
 
