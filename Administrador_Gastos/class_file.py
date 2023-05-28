@@ -6,6 +6,9 @@ import tabula
 import pandas as pd
 import numpy as np
 import os
+import pdfplumber
+import fitz
+
 
 #TODO: Agregar las instancias para las tarjetas de credito.
 #TODO: Gestionar los errores con mensajes personalizados. ie: Error al cargar. El libro se encuentra abierto.
@@ -162,8 +165,30 @@ class AdminGastos():
 
 
     def extract_pdf_bsmart(self):
-        #TODO: Pendiente la extraccion de la data.
-        return
+        pdf_reader = PyPDF2.PdfFileReader(open(self.pdf_path, 'rb'))
+        # hasta la pagina 2 llega la informacion que necesito.
+        for i in range(0,2): #(pdf_reader.getNumPages())):
+            page = pdf_reader.pages[i]
+        #TODO: Cambiar nombres de valiables y del txt temporal.
+            file1 = open('myfile.txt', 'w')
+            file1.writelines(page.extract_text())
+            file1.close()
+
+            file1 = open('myfile.txt', 'r')
+            Lines = file1.readlines()
+
+            valid = False
+            for line in Lines:
+                if line.strip() == 'Detalle de Operaciones':
+                    valid = True
+                if line.strip() == 'MENSUALIDADES SIN INTERESES - EN PESOS MONEDA NACIONAL':
+                    valid = False
+                    break
+                if valid == True:
+                    print(line.strip())
+        #TODO: Ver la manera de guardar y despues separar por columnas el resultado.
+        #TODO: Al final del proceso borrar el archivo temporal de 'myfile.txt'.
+
 
     def add_update_excel(self):
         df = pd.read_csv(self.csv_temps[0])
