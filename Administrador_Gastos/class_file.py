@@ -222,8 +222,9 @@ class AdminGastos():
                 valores_negativos.append('')
             else:
                 valores_negativos.append(row[-2])
-        # cerramos el archivo
+        # cerramos los archivos
         file_temp.close()
+        txt_temp.close()
 
         df2 = pd.DataFrame(valores_negativos,columns=['Negativo'])
         
@@ -252,70 +253,18 @@ class AdminGastos():
             if archivo.endswith('.txt'):
                 ruta_archivo = os.path.join(self.ruta, archivo)
                 os.remove(ruta_archivo)
-                print(f"Archivo {archivo} eliminado.")
+                print(f"Txt temporal eliminado -> {archivo}")
 
         print('Extact and Clear CSV Done!')
 
 
-        #TODO: Al final del proceso borrar el archivo temporal de 'myfile.txt'.
-
-
-    def add_update_excel(self):
+    def update_excel(self):
         df = pd.read_csv(self.csv_temps[0])
-        sheet_name = 'records_' + self.sheet_name
         with pd.ExcelWriter(self.excel_file,mode="a",engine="openpyxl", if_sheet_exists='overlay') as writer:
-            rows = writer.sheets[sheet_name].max_row
-            df.to_excel(writer, sheet_name=sheet_name, header=None, startrow=rows, index=False)
+            rows = writer.sheets[self.sheet_name].max_row
+            df.to_excel(writer, sheet_name=self.sheet_name, header=None, startrow=rows, index=False)
 
-        print("\nSe agrego la informacion al Master.")
+        print("\nSe agrego la informacion al Master.\nFin del proceso!")
 
     def test(self):
         print('Todo ok!')
-
-
-"""
-De mi siguiente data frame, como puedo hacer para rellenar las filas vacias con la fila anterior?
-
-    Fecha
-0   Abr 28
-1   May  5
-2   Abr 15
-3
-4
-5
-6
-7
-8
-9
-10  Abr 17
-11        
-12  Abr 20
-13  Abr 24
-14  Abr 26
-15  Abr 27
-16  May  4
-17  May  8
-
-El resultado esperado de mi nueva columna es:
-
-    Fecha
-0   Abr 28
-1   May  5
-2   Abr 15
-3   Abr 15
-4   Abr 15
-5   Abr 15
-6   Abr 15
-7   Abr 15
-8   Abr 15
-9   Abr 15
-10  Abr 17
-11  Abr 17       
-12  Abr 20
-13  Abr 24
-14  Abr 26
-15  Abr 27
-16  May  4
-17  May  8
-
-"""
