@@ -6,8 +6,7 @@ import tabula
 import pandas as pd
 import numpy as np
 import os
-import pdfplumber
-import fitz
+import re
 
 
 #TODO: Agregar las instancias para las tarjetas de credito.
@@ -166,27 +165,98 @@ class AdminGastos():
 
     def extract_pdf_bsmart(self):
         pdf_reader = PyPDF2.PdfFileReader(open(self.pdf_path, 'rb'))
+
+        # Se limpia el archivo donde se guardara lo extraido del pdf.
+        open('Administrador_Gastos/myfile.txt','w+')
+
+        headers = ['Detalle de Operaciones','Fecha Concepto Población / RFC Otras Pesos',
+                   'Giro de Negocio / Tipos de Cambio Moneda Ext. Divisas']
+
         # hasta la pagina 2 llega la informacion que necesito.
         for i in range(0,2): #(pdf_reader.getNumPages())):
             page = pdf_reader.pages[i]
-        #TODO: Cambiar nombres de valiables y del txt temporal.
-            file1 = open('myfile.txt', 'w')
-            file1.writelines(page.extract_text())
-            file1.close()
+    
+            txt_temp = open('Administrador_Gastos/txt_temp.txt', 'w')
+            txt_temp.writelines(page.extract_text())
+            txt_temp.close()
 
-            file1 = open('myfile.txt', 'r')
-            Lines = file1.readlines()
+            txt_temp = open('Administrador_Gastos/txt_temp.txt', 'r')
+            rows = txt_temp.readlines()
 
             valid = False
-            for line in Lines:
-                if line.strip() == 'Detalle de Operaciones':
+            for row in rows:
+                if row.strip() == 'Detalle de Operaciones':
                     valid = True
-                if line.strip() == 'MENSUALIDADES SIN INTERESES - EN PESOS MONEDA NACIONAL':
+                if row.strip() == 'MENSUALIDADES SIN INTERESES - EN PESOS MONEDA NACIONAL':
                     valid = False
                     break
                 if valid == True:
-                    print(line.strip())
-        #TODO: Ver la manera de guardar y despues separar por columnas el resultado.
+                    if row.strip() not in headers:    
+                        file_temp = open('Administrador_Gastos/myfile.txt','a')
+                        file_temp.write(row.strip() + '\n')
+                        # print(row.strip())
+        file_temp.close()
+
+        with open('Administrador_Gastos/myfile.txt', 'r') as archivo:
+            rows = archivo.readlines()
+        
+        regex = r'(\w{3}\s+\d{1,2})?\s*((?:\S+\s+){1,2}?\S+)\s+.*?(-?[\d,]+\.\d{2})'
+
+        datos = []
+        for row in rows:
+            value = re.search(regex, row)
+            
+            if value:
+                fecha = value.group(1) if value.group(1) else ''
+                concepto = value.group(2)
+                total = value.group(3)
+                
+                datos.append([fecha, concepto, total])
+
+        df1 = pd.DataFrame(datos, columns=['Fecha', 'Concepto', 'Totales'])
+
+        valores_negativos = []
+        for row in rows:
+
+            if row[-2] != '-':
+                valores_negativos.append('')
+            else:
+                valores_negativos.append(row[-2])
+        # cerramos el archivo
+        file_temp.close()
+
+        df2 = pd.DataFrame(valores_negativos,columns=['Negativo'])
+        
+        # Union de los dos df's para agregarle el valor negativo.
+        result = pd.concat([df1,df2],axis=1, join='inner')
+        result[['Totales']] = result[['Totales']].apply(lambda x: x.str.replace(',',''))        
+        result['Total'] = result.apply(lambda row: '-' + str(row['Totales']) if row['Negativo'] == '-' else row['Totales'], axis=1)
+
+        def asignar_subclasificacion(concepto):
+            for clave, valores in self.conceptos.items():
+                for valor in valores:
+                    if valor in concepto.lower():
+                        return clave
+            return 'Otros'
+
+        result['Clasificacion'] = result['Concepto'].apply(asignar_subclasificacion) 
+        
+        result = result[['Clasificacion','Fecha','Concepto','Total']]
+        result['Fecha'].replace('', pd.NA, inplace=True)
+        result['Fecha'].fillna(method='ffill', inplace=True)
+
+        result.to_csv(self.csv_temps[0],index=False)
+
+        # Borrar txt's temp -> [myfile.txt],[txt_temp.txt]
+        for archivo in os.listdir(self.ruta):
+            if archivo.endswith('.txt'):
+                ruta_archivo = os.path.join(self.ruta, archivo)
+                os.remove(ruta_archivo)
+                print(f"Archivo {archivo} eliminado.")
+
+        print('Extact and Clear CSV Done!')
+
+
         #TODO: Al final del proceso borrar el archivo temporal de 'myfile.txt'.
 
 
@@ -201,3 +271,51 @@ class AdminGastos():
 
     def test(self):
         print('Todo ok!')
+
+
+"""
+De mi siguiente data frame, como puedo hacer para rellenar las filas vacias con la fila anterior?
+
+    Fecha
+0   Abr 28
+1   May  5
+2   Abr 15
+3
+4
+5
+6
+7
+8
+9
+10  Abr 17
+11        
+12  Abr 20
+13  Abr 24
+14  Abr 26
+15  Abr 27
+16  May  4
+17  May  8
+
+El resultado esperado de mi nueva columna es:
+
+    Fecha
+0   Abr 28
+1   May  5
+2   Abr 15
+3   Abr 15
+4   Abr 15
+5   Abr 15
+6   Abr 15
+7   Abr 15
+8   Abr 15
+9   Abr 15
+10  Abr 17
+11  Abr 17       
+12  Abr 20
+13  Abr 24
+14  Abr 26
+15  Abr 27
+16  May  4
+17  May  8
+
+"""

@@ -10,8 +10,9 @@ conceptos_debito = {
 conceptos_credito = {
             "Streaming": ['disney','spotify'],
             "Amazon": ['amazon'],
-            "Mercado Libre": ['merpago'],
-            "TicketMaster": ['ticketmaster']
+            "Mercado Libre": ['merpago', 'mercado pago'],
+            "TicketMaster": ['ticketmaster'],
+            "Pago Tarjeta": ['su abono']
             }
 
 # cd.clear_downloads()
