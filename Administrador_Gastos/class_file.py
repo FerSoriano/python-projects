@@ -1,5 +1,6 @@
 import shutil
 import datetime as dt
+from datetime import date
 from pathlib import Path
 import PyPDF2
 import tabula
@@ -14,7 +15,7 @@ import re
 
 class AdminGastos():
     def __init__(self, nombre_tarjeta, sheet_name, conceptos, ruta = '', pdf_folder = '', download_file = '', pdf_log_folder = '',
-                 pdf_name = '', pdf_path = '', excel_file = '', csv_temps = '') -> None:
+                 pdf_name = '', pdf_path = '', excel_file = '', csv_temps = '', year = '') -> None:
 
         self.conceptos = conceptos
         self.nombre_tarjera = nombre_tarjeta
@@ -28,6 +29,7 @@ class AdminGastos():
         self.excel_file = excel_file
         self.csv_temps = csv_temps
         self.last_month = (dt.date.today().replace(day=1) - dt.timedelta(days=1))
+        self.year = year
 
         if ruta == '':
             self.ruta = 'D:\Proyectos\python-projects\Administrador_Gastos\\'
@@ -54,6 +56,9 @@ class AdminGastos():
 
         if csv_temps == '':
             self.csv_temps = [f'{self.ruta}Excel\\records.csv',f'{self.ruta}Excel\\records_temp_1.csv',f'{self.ruta}Excel\\records_temp_2.csv']
+        
+        if year == '':
+            self.year = date.today().year
 
 
     def move_pdf(self):
@@ -242,10 +247,15 @@ class AdminGastos():
 
         result['Clasificacion'] = result['Concepto'].apply(asignar_subclasificacion) 
         
-        result = result[['Clasificacion','Fecha','Concepto','Total']]
         result['Fecha'].replace('', pd.NA, inplace=True)
         result['Fecha'].fillna(method='ffill', inplace=True)
 
+        # Agregamos el año para que Excel lea bien la fecha.
+        result['year'] = self.year
+        result['Fecha'] = result['Fecha'].apply(lambda x: x.split()[1] + ' ' + x.split()[0])
+        result['Fecha'] = result.apply(lambda row: str(row['Fecha']) + ' ' + str(row['year']), axis=1) 
+
+        result = result[['Clasificacion','Fecha','Concepto','Total']]
         result.to_csv(self.csv_temps[0],index=False)
 
         # Borrar txt's temp -> [myfile.txt],[txt_temp.txt]
@@ -264,7 +274,7 @@ class AdminGastos():
             rows = writer.sheets[self.sheet_name].max_row
             df.to_excel(writer, sheet_name=self.sheet_name, header=None, startrow=rows, index=False)
 
-        print("\nSe agrego la informacion al Master.\nFin del proceso!")
+        print("Se agrego la informacion al Master.\nFin del proceso!")
 
     def test(self):
         print('Todo ok!')
