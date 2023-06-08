@@ -66,6 +66,7 @@ class AdminGastos():
             if file.name == self.pdf_name:
                 pdf_name_date = f'{file.stem} {self.last_month.strftime("%Y%m")}01{file.suffix}'
                 shutil.move(file, self.pdf_log_folder + pdf_name_date)
+                print('Se guardo PDF del mes anterior en la carpeta Log.')
 
         for file in self.download_file.iterdir():
             if file.name == self.pdf_name:
@@ -177,8 +178,8 @@ class AdminGastos():
         headers = ['Detalle de Operaciones','Fecha Concepto Población / RFC Otras Pesos',
                    'Giro de Negocio / Tipos de Cambio Moneda Ext. Divisas']
 
-        # hasta la pagina 2 llega la informacion que necesito.
-        for i in range(0,2): #(pdf_reader.getNumPages())):
+        # hasta la pagina 2 llega la informacion que necesito. A veces sera la 3 por la publicidad.
+        for i in range(0,3): #(pdf_reader.getNumPages())):
             page = pdf_reader.pages[i]
     
             txt_temp = open('Administrador_Gastos/txt_temp.txt', 'w')
