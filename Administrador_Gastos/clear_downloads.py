@@ -36,11 +36,11 @@ def clear_downloads():
             shutil.move(e, folderAudios + '/' + e.name)
         elif suf in listPhoto:
             shutil.move(e, folderImagenes + '/' + e.name)
-        # else: 
-        #     try:
-        #         shutil.move(e, folderOtros + '/' + e.name)
-        #     except:
-        #         print('se encontro algun error.')
+        else: 
+            try:
+                shutil.move(e, folderOtros + '/' + e.name)
+            except:
+                print('se encontro algun error.')
                 
 
     print('Done. Se movieron los archivos.')

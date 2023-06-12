@@ -9,8 +9,6 @@ import numpy as np
 import os
 import re
 
-
-#TODO: Agregar las instancias para las tarjetas de credito.
 #TODO: Gestionar los errores con mensajes personalizados. ie: Error al cargar. El libro se encuentra abierto.
 
 class AdminGastos():
@@ -168,18 +166,20 @@ class AdminGastos():
         # print(pages)
         print('Extact and Clear CSV Done!')
 
-
-    def extract_pdf_bsmart(self):
+    # Metodo para extraer los datos de las tarjetas de Credito.
+    def extract_pdf_credito(self):
         pdf_reader = PyPDF2.PdfFileReader(open(self.pdf_path, 'rb'))
 
         # Se limpia el archivo donde se guardara lo extraido del pdf.
         open('Administrador_Gastos/myfile.txt','w+')
 
         headers = ['Detalle de Operaciones','Fecha Concepto Población / RFC Otras Pesos',
-                   'Giro de Negocio / Tipos de Cambio Moneda Ext. Divisas']
+                   'Giro de Negocio / Tipos de Cambio Moneda Ext. Divisas','SALDO PENDIENTE DISPONIBLE BANAMEX - EN PESOS MONEDA NACIONAL',
+                   'Fecha Concepto Monto Mensualidades Saldo','Original Restantes Pendiente',
+                   'POR SU TARJETA TITULAR          FERNANDO SORIANO TORRES  # 5546 2590 0113 8355']
 
         # hasta la pagina 2 llega la informacion que necesito. A veces sera la 3 por la publicidad.
-        for i in range(0,3): #(pdf_reader.getNumPages())):
+        for i in range(0,3):
             page = pdf_reader.pages[i]
     
             txt_temp = open('Administrador_Gastos/txt_temp.txt', 'w')
@@ -193,14 +193,14 @@ class AdminGastos():
             for row in rows:
                 if row.strip() == 'Detalle de Operaciones':
                     valid = True
-                if row.strip() == 'MENSUALIDADES SIN INTERESES - EN PESOS MONEDA NACIONAL':
+                if row.strip()  in ['MENSUALIDADES SIN INTERESES - EN PESOS MONEDA NACIONAL', 'SALDO PENDIENTE DISPONIBLE BANAMEX - EN PESOS MONEDA NACIONAL']:
                     valid = False
                     break
                 if valid == True:
                     if row.strip() not in headers:    
                         file_temp = open('Administrador_Gastos/myfile.txt','a')
                         file_temp.write(row.strip() + '\n')
-                        # print(row.strip())
+                        
         file_temp.close()
 
         with open('Administrador_Gastos/myfile.txt', 'r') as archivo:
@@ -211,7 +211,7 @@ class AdminGastos():
         datos = []
         for row in rows:
             value = re.search(regex, row)
-            
+
             if value:
                 fecha = value.group(1) if value.group(1) else ''
                 concepto = value.group(2)
@@ -258,7 +258,7 @@ class AdminGastos():
 
         result = result[['Clasificacion','Fecha','Concepto','Total']]
         result.to_csv(self.csv_temps[0],index=False)
-
+        
         # Borrar txt's temp -> [myfile.txt],[txt_temp.txt]
         for archivo in os.listdir(self.ruta):
             if archivo.endswith('.txt'):
@@ -267,7 +267,7 @@ class AdminGastos():
                 print(f"Txt temporal eliminado -> {archivo}")
 
         print('Extact and Clear CSV Done!')
-
+        
 
     def update_excel(self):
         df = pd.read_csv(self.csv_temps[0])
@@ -275,7 +275,7 @@ class AdminGastos():
             rows = writer.sheets[self.sheet_name].max_row
             df.to_excel(writer, sheet_name=self.sheet_name, header=None, startrow=rows, index=False)
 
-        print("Se agrego la informacion al Master.\nFin del proceso!")
+        print(f"Se agrego la informacion al Master.\nFin del proceso de {self.nombre_tarjera.upper()}")
 
     def test(self):
         print('Todo ok!')
