@@ -275,7 +275,7 @@ class AdminGastos():
             rows = writer.sheets[self.sheet_name].max_row
             df.to_excel(writer, sheet_name=self.sheet_name, header=None, startrow=rows, index=False)
 
-        print(f"Se agrego la informacion al Master.\nFin del proceso de {self.nombre_tarjera.upper()}")
+        print(f"Se agrego la informacion al Master.\nFin del proceso de {self.nombre_tarjera.upper()}\n")
 
     def test(self):
         print('Todo ok!')
