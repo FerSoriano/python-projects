@@ -171,7 +171,7 @@ class AdminGastos():
         pdf_reader = PyPDF2.PdfFileReader(open(self.pdf_path, 'rb'))
 
         # Se limpia el archivo donde se guardara lo extraido del pdf.
-        open('Administrador_Gastos/myfile.txt','w+')
+        open('d:/Proyectos/python-projects/Administrador_Gastos/myfile.txt','w+')
 
         headers = ['Detalle de Operaciones','Fecha Concepto Población / RFC Otras Pesos',
                    'Giro de Negocio / Tipos de Cambio Moneda Ext. Divisas','SALDO PENDIENTE DISPONIBLE BANAMEX - EN PESOS MONEDA NACIONAL',
@@ -182,11 +182,11 @@ class AdminGastos():
         for i in range(0,3):
             page = pdf_reader.pages[i]
     
-            txt_temp = open('Administrador_Gastos/txt_temp.txt', 'w')
+            txt_temp = open('d:/Proyectos/python-projects/Administrador_Gastos/txt_temp.txt', 'w')
             txt_temp.writelines(page.extract_text())
             txt_temp.close()
 
-            txt_temp = open('Administrador_Gastos/txt_temp.txt', 'r')
+            txt_temp = open('d:/Proyectos/python-projects/Administrador_Gastos/txt_temp.txt', 'r')
             rows = txt_temp.readlines()
 
             valid = False
@@ -198,12 +198,12 @@ class AdminGastos():
                     break
                 if valid == True:
                     if row.strip() not in headers:    
-                        file_temp = open('Administrador_Gastos/myfile.txt','a')
+                        file_temp = open('d:/Proyectos/python-projects/Administrador_Gastos/myfile.txt','a')
                         file_temp.write(row.strip() + '\n')
                         
         file_temp.close()
 
-        with open('Administrador_Gastos/myfile.txt', 'r') as archivo:
+        with open('d:/Proyectos/python-projects/Administrador_Gastos/myfile.txt', 'r') as archivo:
             rows = archivo.readlines()
         
         regex = r'(\w{3}\s+\d{1,2})?\s*((?:\S+\s+){1,2}?\S+)\s+.*?(-?[\d,]+\.\d{2})'
