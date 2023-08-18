@@ -14,6 +14,7 @@ class API_Spotify():
     def __init__(self, client_id, client_secret):
         self.__client_id = client_id
         self.__client_secret = client_secret
+        self.__error = ''
     
     def getToken(self):
         auth_str = str(self.__client_id + ':' + self.__client_secret).encode('utf-8')
@@ -36,30 +37,36 @@ class API_Spotify():
         return self.token
 
     def getTokenTemp(self):
-        self.token = 'BQD2IwLO14rdcb1lPoSH8KG6pGnE9uvT_lQyIqwOYX5lVgI7_p2uKxwCvspo0b7imEKn9u2BCmHD-8QLXphLN8W72aW6wkL-1z6N1eLEWTzv2kJF46A'
+        self.token = 'BQCgwCSMI5FMvDRTFMfzq6-1bLFEhi6BR_SUzRFc3ABIE6EChalmErM0wKQaknsq4ksN6lnmLeSE2rqU62ij-rfLl1fJKp-xLpFRiU07FL2srmYa4QY'
     
-    def __getResult(self, url):
+    def __getResult(self, url, metodo = ''):
         result = requests.get(url=url,headers=self.__createAccessToken())
         json_result = json.loads(result.content)
         
-        try:
-            if json_result['error']['status'] == 401:
-                print(json_result)
-                exit()
-        except:
-            if json_result['artists']['items'] == []:
-                print('Artista no encontrado.')
-                exit()
-        finally:
-            return json_result
+        if metodo == 'id':
+            try:
+                if json_result['error']['status'] == 401:
+                    print(json_result)
+                    self.__error = 0 # Token expired
+                    return self.__error
+            except:
+                if json_result['artists']['items'] == []:
+                    print('Artista no encontrado.')
+                    self.__error = 1 # Artist not found
+                    return self.__error
+                
+        return json_result
 
     def __createAccessToken(self):
-        return {'Authorization': 'Bearer ' + self.token}
+        return {'Authorization': 'Bearer ' + self.token}    
 
     def __getArtistID(self, artist_name):
         url = f'https://api.spotify.com/v1/search?q={artist_name}&type=artist&limit=1'
 
-        result = self.__getResult(url)
+        result = self.__getResult(url,'id')
+
+        if self.__error == 0 or self.__error == 1:
+            exit()
 
         artistID = result['artists']['items'][0]['id']
         self.artist_name = result['artists']['items'][0]['name']
@@ -90,6 +97,6 @@ class API_Spotify():
 spotify = API_Spotify(client_id,client_secret)
 # print(spotify.getToken())
 spotify.getTokenTemp() 
-spotify.getArtistSongs('Tame Impala')
+spotify.getArtistSongs('Blossons')
 
 
