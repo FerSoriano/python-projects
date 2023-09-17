@@ -11,7 +11,6 @@ router = APIRouter(prefix='/users',
 def seach_user(field, key) -> User:
     try:
         user = db_client.new_users.find_one({field:key})
-        print(user)
         return User(**user_schema(user))
     except:
         {"error": "No se ha encontrado usuario."}
