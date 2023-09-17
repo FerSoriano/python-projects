@@ -21,7 +21,8 @@ def user_meta_schema(user) -> dict:
             "email": user["email"],
             "created_at" : user["created_at"],
             "last_modified": user["last_modified"],
-            "is_new": user["is_new"]}
+            "is_new": user["is_new"],
+            "is_active": user["is_active"]}
 
 def users_meta_schema(users) -> list:
     """
