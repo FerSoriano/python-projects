@@ -8,4 +8,5 @@ class User(BaseModel):
 class UserMetadata(User):
     created_at : str
     last_modified: str
-    is_new: str
+    is_new: bool
+    is_active: bool
