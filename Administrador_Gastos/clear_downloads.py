@@ -24,7 +24,7 @@ def clear_downloads():
 
     for e in pathFiles.iterdir():
         suf = e.suffix
-        if suf == '':
+        if suf == '' or suf == '.ini':
             continue
         elif suf in listExcel:
             shutil.move(e, folderExcel + '/' + e.name)
@@ -36,11 +36,10 @@ def clear_downloads():
             shutil.move(e, folderAudios + '/' + e.name)
         elif suf in listPhoto:
             shutil.move(e, folderImagenes + '/' + e.name)
-        # else: 
-        #     try:
-        #         shutil.move(e, folderOtros + '/' + e.name)
-        #     except:
-        #         print('se encontro algun error.')
+        elif not e.is_dir():
+                shutil.move(e, folderOtros + '/' + e.name)
+        else:
+            print('se encontro algun error.')
                 
 
     print('Done. Se movieron los archivos.\n')
