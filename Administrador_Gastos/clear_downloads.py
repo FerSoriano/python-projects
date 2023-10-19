@@ -3,46 +3,74 @@
 from pathlib import Path
 import shutil
 
+DESCARGAS = '/Users/fersoriano/Downloads'
 
-def clear_downloads():
-    descargas         = 'C:/Users/fer8f/Downloads'
+folderAudios        = DESCARGAS + '/Descargas_Audios'
+folderEjecutables   = DESCARGAS + '/Descargas_Programas'
+folderExcel         = DESCARGAS + '/Descargas_Excel'
+folderImagenes      = DESCARGAS + '/Descargas_Imagenes'
+folderOtros         = DESCARGAS + '/Descargas_Otros'
+folderPDF           = DESCARGAS + '/Descargas_PDF'
 
-    folderAudios      =  descargas + '/Descargas_Audios'
-    folderEjecutables =  descargas + '/Descargas_Ejecutables'
-    folderExcel       =  descargas + '/Descargas_Excel'
-    folderImagenes    =  descargas + '/Descargas_Imagenes'
-    folderOtros       =  descargas + '/Descargas_Otros'
-    folderPDF         =  descargas + '/Descargas_PDF'
+listExcel = ['.xls', '.xlsx', '.csv', '.xlsm']
+listPDF   = ['.pdf']
+listEXE   = ['.exe','.zip','.dmg','.iso']
+listMusic = ['.mp3', '.mp4']
+listPhoto = ['.jpg', '.jpeg', '.png']
 
-    listExcel = ['.xls','.xlsx','.csv', '.xlsm']
-    listPDF = ['.pdf']
-    listEXE = ['.exe']
-    listMusic = ['.mp3','.mp4']
-    listPhoto = ['.jpg','.jpeg', '.png']
+files_name = []
+flag = 0
 
-    pathFiles = Path(descargas)
+folders = {
+    'Descargas_Audios' : 0,
+    'Descargas_Programas': 0,
+    'Descargas_Excel': 0,
+    'Descargas_Imagenes': 0,
+    'Descargas_Otros': 0,
+    'Descargas_PDF': 0
+}
+
+def move_files(folder, file) -> None:
+    global flag
+    shutil.move(file, folder + '/' + file.name)
+    files_name.append(file.name)
+    folders[Path(folder).stem] += 1
+    flag += 1
+    return
+
+def clear_downloads() -> None:
+
+    pathFiles = Path(DESCARGAS)
 
     for e in pathFiles.iterdir():
         suf = e.suffix
-        if suf == '':
+        if suf == '' or suf == '.ini':
             continue
         elif suf in listExcel:
-            shutil.move(e, folderExcel + '/' + e.name)
+            move_files(folderExcel,e)
         elif suf in listPDF:
-            shutil.move(e, folderPDF + '/' + e.name)
+            move_files(folderPDF,e)
         elif suf in listEXE:
-            shutil.move(e, folderEjecutables + '/' + e.name)
+            move_files(folderEjecutables,e)
         elif suf in listMusic:
-            shutil.move(e, folderAudios + '/' + e.name)
+            move_files(folderAudios,e)
         elif suf in listPhoto:
-            shutil.move(e, folderImagenes + '/' + e.name)
-        # else: 
-        #     try:
-        #         shutil.move(e, folderOtros + '/' + e.name)
-        #     except:
-        #         print('se encontro algun error.')
-                
+            move_files(folderImagenes,e)
+        elif not e.is_dir():
+            move_files(folderOtros,e)
+        else:
+            print('se encontro algun error.')
 
-    print('Done. Se movieron los archivos.\n')
+def show_moved_files() -> None:
+    if flag > 0:
+        print('Done ✅ Se movieron los archivos.\n')
+        for key, value in folders.items():
+            if value > 0:
+                print(f'{key} -> {value} archivo(s).')
+        print('\n')
+    else:
+        print('No se encontraron archivos nuevos. 😴💤\n')
 
 
+clear_downloads()
+show_moved_files()
