@@ -3,7 +3,7 @@ import datetime as dt
 from datetime import date
 from pathlib import Path
 import PyPDF2
-import tabula
+import tabula #TODO: Buscar otra libreria, esta causa conflicto de versiones 
 import pandas as pd
 import numpy as np
 import os
@@ -29,38 +29,38 @@ class AdminGastos():
         self.last_month = (dt.date.today().replace(day=1) - dt.timedelta(days=1))
         self.year = year
 
-        if ruta == '':
-            self.ruta = 'D:\Proyectos\python-projects\Administrador_Gastos\\'
+        # if ruta == '':
+        #     self.ruta = 'D:\Proyectos\python-projects\Administrador_Gastos\\'
 
-        if pdf_folder == '':
-            self.pdf_folder = Path(f'{self.ruta}PDF\\')
-        else:
-            self.pdf_folder = Path(f'{self.ruta}{pdf_folder}')
+        # if pdf_folder == '':
+        #     self.pdf_folder = Path(f'{self.ruta}PDF\\')
+        # else:
+        #     self.pdf_folder = Path(f'{self.ruta}{pdf_folder}')
         
-        if download_file == '':
-            self.download_file = Path('C:/Users/fer8f/Downloads/Descargas_PDF')
+        # if download_file == '':
+        #     self.download_file = Path('C:/Users/fer8f/Downloads/Descargas_PDF')
 
-        if pdf_log_folder == '':
-            self.pdf_log_folder = f'{self.ruta}PDF\log\\'
+        # if pdf_log_folder == '':
+        #     self.pdf_log_folder = f'{self.ruta}PDF\log\\'
 
-        if pdf_name == '': # file_name
-            self.pdf_name = 'EstadodeCuenta.pdf'
+        # if pdf_name == '': # file_name
+        #     self.pdf_name = 'EstadodeCuenta.pdf'
 
-        if pdf_path == '':
-            self.pdf_path = f'{self.ruta}PDF\\' + self.pdf_name
+        # if pdf_path == '':
+        #     self.pdf_path = f'{self.ruta}PDF\\' + self.pdf_name
 
-        if excel_file == '':
-            self.excel_file = f'{self.ruta}Excel\\master.xlsx'
+        # if excel_file == '':
+        #     self.excel_file = f'{self.ruta}Excel\\master.xlsx'
 
-        if csv_temps == '':
-            self.csv_temps = [f'{self.ruta}Excel\\records.csv',f'{self.ruta}Excel\\records_temp_1.csv',f'{self.ruta}Excel\\records_temp_2.csv']
+        # if csv_temps == '':
+        #     self.csv_temps = [f'{self.ruta}Excel\\records.csv',f'{self.ruta}Excel\\records_temp_1.csv',f'{self.ruta}Excel\\records_temp_2.csv']
         
-        if year == '':
-            self.year = date.today().year
+        # if year == '':
+        #     self.year = date.today().year
 
 
     def move_pdf(self):
-        for file in self.pdf_folder.iterdir():
+        for file in Path(self.pdf_folder).iterdir():
             if file.name == self.pdf_name:
                 pdf_name_date = f'{file.stem} {self.last_month.strftime("%Y%m")}01{file.suffix}'
                 shutil.move(file, self.pdf_log_folder + pdf_name_date)
@@ -74,13 +74,13 @@ class AdminGastos():
     def extract_pdf_debito(self):
         pages = []
         pages_text = ''
-        pdf_reader = PyPDF2.PdfFileReader(open(self.pdf_path, 'rb'))
+        pdf_reader = PyPDF2.PdfReader(open(self.pdf_path, 'rb'))
 
         # extrae solo las paginas que tienen datos.
         valid = False
         while (valid == False):
-            for i in range(1,(pdf_reader.getNumPages())):
-                list_temp = tabula.read_pdf(self.pdf_path,pages=i,encoding='latin1')
+            for i in range(1,(len(pdf_reader.pages))):
+                list_temp = tabula.read_pdf(self.pdf_path,pages=i,encoding='latin1') 
                 if list_temp == []:
                     if valid == True:
                         break
@@ -168,7 +168,7 @@ class AdminGastos():
 
     # Metodo para extraer los datos de las tarjetas de Credito.
     def extract_pdf_credito(self):
-        pdf_reader = PyPDF2.PdfFileReader(open(self.pdf_path, 'rb'))
+        pdf_reader = PyPDF2.PdfReader(open(self.pdf_path, 'rb'))
 
         # Se limpia el archivo donde se guardara lo extraido del pdf.
         open('d:/Proyectos/python-projects/Administrador_Gastos/myfile.txt','w+')

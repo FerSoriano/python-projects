@@ -10,6 +10,7 @@ import time
 import os
 from datetime import date
 import statistics
+import requests
 
 class PriceTracking():
     def __init__(self, service_account, workbook, worksheet):
@@ -44,7 +45,7 @@ class PriceTracking():
                 print(price)
             except:
                 driver.close()
-                print('No se encontro el precio.')
+                print('No se encontro el precio. ❌')
                 self.prices.append('')
 
         for e in self.records:
@@ -58,7 +59,7 @@ class PriceTracking():
             execute_selenium(self, url=e['URL'], xpath=self.xpath)
 
         os.system('cls')
-        print('Se extrajeron los precios de los articulos.')
+        print('Se extrajeron los precios de los articulos. ✅')
 
     
     def updateWorksheet(self):
@@ -112,7 +113,7 @@ class PriceTracking():
         self.ws.update_cell(1 ,max_cols, 'AVG')
         self.ws.update_cell(1 ,max_cols + 1, 'Comments')
 
-        # update cells
+        # update cells``
         for row in range(2, max_rows + 1):
             self.ws.update_cell(row ,max_cols - 1, new_prices[row - 2])
             self.ws.update_cell(row ,max_cols, avg_list[row - 2])

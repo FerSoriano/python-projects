@@ -11,11 +11,13 @@ folderExcel         = DESCARGAS + '/Descargas_Excel'
 folderImagenes      = DESCARGAS + '/Descargas_Imagenes'
 folderOtros         = DESCARGAS + '/Descargas_Otros'
 folderPDF           = DESCARGAS + '/Descargas_PDF'
+folderVideos           = DESCARGAS + '/Descargas_Videos'
 
 listExcel = ['.xls', '.xlsx', '.csv', '.xlsm']
 listPDF   = ['.pdf']
 listEXE   = ['.exe','.zip','.dmg','.iso']
-listMusic = ['.mp3', '.mp4']
+listMusic = ['.mp3']
+listVideo = ['.mp4','.mov']
 listPhoto = ['.jpg', '.jpeg', '.png']
 
 files_name = []
@@ -27,7 +29,8 @@ folders = {
     'Descargas_Excel': 0,
     'Descargas_Imagenes': 0,
     'Descargas_Otros': 0,
-    'Descargas_PDF': 0
+    'Descargas_PDF': 0,
+    'Descargas_Videos':0
 }
 
 def move_files(folder, file) -> None:
@@ -56,6 +59,8 @@ def clear_downloads() -> None:
             move_files(folderAudios,e)
         elif suf in listPhoto:
             move_files(folderImagenes,e)
+        elif suf in listVideo:
+            move_files(folderVideos,e)
         elif not e.is_dir():
             move_files(folderOtros,e)
         else:
@@ -71,6 +76,6 @@ def show_moved_files() -> None:
     else:
         print('No se encontraron archivos nuevos. 😴💤\n')
 
-
-clear_downloads()
-show_moved_files()
+if __name__ == '__main__':
+    clear_downloads()
+    show_moved_files()
