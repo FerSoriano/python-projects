@@ -13,7 +13,7 @@ from pytube import YouTube
 import pandas as pd
 from gspread.auth import ServiceAccountCredentials
 
-def get_service_account():
+def get_service_account() -> str:
     service_account = '/Users/fersoriano/Documents/Proyectos/Podcast/code/key/key.json'
     return service_account
 
