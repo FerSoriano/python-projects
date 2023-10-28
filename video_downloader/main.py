@@ -16,7 +16,7 @@ Esta correcto el Episodio? ('y' para continuar o cualquiera para salir): """
 r = input(texto).lower()
 
 audio = False
-solo_audio = input("Deseas descargar solo el audio? 'y' para continuar o cualquiera para omitir): ").lower()
+solo_audio = input("Deseas descargar solo el audio? 'y' para aceptar o cualquiera para omitir): ").lower()
 if solo_audio == 'y':
     audio = True
 
@@ -27,7 +27,7 @@ if r == 'y':
     conexion.moveDataToCSV(EPISODIO)
 
     videos = config.DescargaVideos(CSV)
-    videos.download('.',audio=audio)
+    videos.download(PATH_VIDEOS,audio=audio)
 
     print('Proceso completado.')
 
