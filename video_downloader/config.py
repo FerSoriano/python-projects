@@ -77,23 +77,27 @@ class DescargaVideos():
         print(f'Tiempo total de descarga: {str(total_time)} {unidad}.\n')
         
     
-    def download(self,path_videos) -> None:
+    def download(self,path_videos,audio) -> None:
         urls = self.getURLs()
+        tipo = 'audio' if audio == True else 'video' 
         for e,url in enumerate(urls):
             self.start = time.time()
             print('Intentando conectar a Youtube...')
             video = YouTube(url)
             print('Obteniendo informacion del video...')
-            download_video = video.streams.get_highest_resolution()
+            if audio == True:
+                download_video = video.streams.get_audio_only()
+            else:
+                download_video = video.streams.get_highest_resolution()
             try:
-                print(f'Descargando video {e+1}...')
+                print(f'Descargando {tipo} {e+1}...')
                 download_video.download(self.temp)
-                print(f'Se descargo el video: {self.titulos[e]} con exito! ✅')
+                print(f'Se descargo el {tipo}: {self.titulos[e]} con exito! ✅')
                 self.end = time.time()
                 self.getExecutionTime()
                 self.move(path_videos,self.titulos[e])
             except:
-                print(f'Sucedio un error en descargar el video {self.titulos[e]} ❌')
+                print(f'Sucedio un error en descargar el {tipo} {self.titulos[e]} ❌')
         
 
     def move(self,path,name) -> None:
