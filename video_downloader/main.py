@@ -10,12 +10,15 @@ PATH_VIDEOS = f'/Users/fersoriano/Documents/Proyectos/Podcast/videos/{EPISODIO}/
 
 
 texto = f"""
---------------------------------
-*Episodio actual: {EPISODIO}*
+*** Episodio actual: {EPISODIO} ***
 Esta correcto el Episodio? ('y' para continuar o cualquiera para salir): """
 
-
 r = input(texto).lower()
+
+audio = False
+solo_audio = input("Deseas descargar solo el audio? 'y' para continuar o cualquiera para omitir): ").lower()
+if solo_audio == 'y':
+    audio = True
 
 if r == 'y':
     conexion = config.GoogleConnection(service_account=config.get_service_account(),workbook=WORKBOOK,worksheet=WORKSHEET,csv=CSV)
@@ -24,7 +27,7 @@ if r == 'y':
     conexion.moveDataToCSV(EPISODIO)
 
     videos = config.DescargaVideos(CSV)
-    videos.download(PATH_VIDEOS)
+    videos.download('.',audio=audio)
 
     print('Proceso completado.')
 
