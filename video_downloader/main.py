@@ -1,36 +1,61 @@
-
-import config
 import os
+import shutil
+import time
+from pytube import YouTube
 
-EPISODIO = 'Ep-01'
-WORKBOOK = 'Futbol-Champagne'
-WORKSHEET = 'videos'
-CSV = 'videos.csv'
-PATH_VIDEOS = f'/Users/fersoriano/Documents/Proyectos/Podcast/videos/{EPISODIO}/downloads'
-
-
-texto = f"""
-*** Episodio actual: {EPISODIO} ***
-Esta correcto el Episodio? ('y' para continuar o cualquiera para salir): """
-
-r = input(texto).lower()
+class DescargaVideos(): 
+    def __init__(self, url) -> None:
+        self.url = url
+        self.temp = './temp/'
+    
+    def getExecutionTime(self) -> None:
+        total_time = round((self.end - self.start),2)
+        unidad = 'seg'
+        if total_time > 60:
+            total_time = round((total_time / 60),2)
+            unidad = 'min'
+        print(f'Tiempo total de descarga: {str(total_time)} {unidad}.\n')
+        
+    
+    def download(self,path_videos,audio) -> None:
+        tipo = 'audio' if audio == True else 'video' 
+        self.start = time.time()
+        print('Intentando conectar a Youtube...')
+        video = YouTube(self.url)
+        print('Obteniendo informacion del video...')
+        if audio == True:
+            download_video = video.streams.get_audio_only()
+        else:
+            download_video = video.streams.get_highest_resolution()
+        try:
+            print(f'Descargando {tipo}...')
+            download_video.download(self.temp)
+            print(f'Se descargo el {tipo} con exito! ✅')
+            self.end = time.time()
+            self.getExecutionTime()
+            path_from = self.temp + download_video.title + '.mp4'
+            path_to = path_videos + download_video.title + '.mp4'
+            shutil.move(path_from, path_to)
+            
+        except:
+            print(f'Sucedio un error en descargar el {tipo}: {download_video.title} ❌')
+            exit()
 
 audio = False
-solo_audio = input("Deseas descargar solo el audio? 'y' para aceptar o cualquiera para omitir): ").lower()
+url = input('URL del video: ')
+solo_audio = input("Deseas descargar solo el audio? (y/n): ").lower()
+path_videos = input("Donde deseas guardarlo? (default: ~/Movies/Downloaded): ")
+
 if solo_audio == 'y':
     audio = True
-
-if r == 'y':
-    conexion = config.GoogleConnection(service_account=config.get_service_account(),workbook=WORKBOOK,worksheet=WORKSHEET,csv=CSV)
-    conexion.setConection()
-    conexion.getRecords()
-    conexion.moveDataToCSV(EPISODIO)
-
-    videos = config.DescargaVideos(CSV)
-    videos.download(PATH_VIDEOS,audio=audio)
-
-    print('Proceso completado.')
-
-else:
-    os.system('clear')
+elif solo_audio != 'n':
+    print('Opcion incorrecta. ❌')
     exit()
+
+if path_videos == '':
+    path_videos = '/Users/fersoriano/Movies/Downloaded/'
+
+videos = DescargaVideos(url)
+videos.download(path_videos,audio=audio)
+
+print('Proceso completado.')
