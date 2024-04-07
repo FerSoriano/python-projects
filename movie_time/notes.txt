@@ -1,0 +1,7 @@
+Programa donde se descargara la lista de las 100 mejores peliculas y cada que se ejecute, una pelicula sera seleccionada aleatoriamente.
+
+La pelicula seleccionada ya no debera aparecer en la siguiente ejecucion.
+
+Las listas de las peliculas estaran guardadas en un libro de Google Sheets que se actualizara automaticamente
+
+link peliculas: https://es.wikipedia.org/wiki/Anexo:Las_100_mejores_pel%C3%ADculas_del_siglo_XXI_seg%C3%BAn_la_BBC
