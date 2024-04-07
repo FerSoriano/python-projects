@@ -10,6 +10,8 @@ import time
 import os
 from datetime import date
 import statistics
+#TODO: Probar usar Request en lugar de Selenium
+import requests
 
 class PriceTracking():
     def __init__(self, service_account, workbook, worksheet):
@@ -32,7 +34,7 @@ class PriceTracking():
 
         def execute_selenium(self, url, xpath):
             try:
-                time.sleep(2)
+                time.sleep(1)
                 driver = config.get_selenium_driver()
                 driver.get(url)
                 time.sleep(2)
@@ -41,24 +43,25 @@ class PriceTracking():
                 time.sleep(2)
                 driver.close()
                 self.prices.append(price)
-                print(price)
+                print(f'Precio: ${price}')
             except:
                 driver.close()
-                print('No se encontro el precio.')
+                print('No se encontro el precio. ❌')
                 self.prices.append('')
 
         for e in self.records:
             if e['Sitio'] == 'Amazon':
-                self.xpath = '//*[@id="corePrice_feature_div"]/div/span[1]/span[2]/span[2]'
+                self.xpath = '//*[@id="corePrice_feature_div"]/div/div/span[1]/span[2]/span[2]'
             elif e['Sitio'] == 'Mercado Libre':
-                if e['Articulo'] == 'Guitarra acústica Fender Classic Design CC-60S':
-                    self.xpath = '//*[@id="ui-pdp-main-container"]/div[1]/div/div[1]/div[2]/div[2]/div[1]/div[1]/span/span[3]'
-                else:
-                    self.xpath = '//*[@id="price"]/div/div[1]/div[1]/span/span[3]'
+                self.xpath = '//*[@id="price"]/div/div[1]/div[1]/span/span[3]'
+            print(f'Obteniendo informacion del articulo: {e["Articulo"]}...')
             execute_selenium(self, url=e['URL'], xpath=self.xpath)
 
-        os.system('cls')
-        print('Se extrajeron los precios de los articulos.')
+        # os.system('clear')
+        if len(self.prices) < 1:
+            print('No se pudo obtener ningun precio. Algo salio mal. ⚠️')
+        else:
+            print('Se extrajeron los precios de los articulos. ✅')
 
     
     def updateWorksheet(self):
@@ -74,9 +77,9 @@ class PriceTracking():
                 else:
                     price = price.replace(',','')
                     self.new_prices.append(float(price))
-            print('Se cambio el tipo de dato de los precios.')
 
         converted_prices(self, self.prices)
+        print('Se cambio el tipo de dato de los precios.')
         new_prices_zero = [0 if a == '' else a for a in self.new_prices]
 
         for i,record in enumerate(self.records_list[1:]): #quitamos los headers
@@ -90,12 +93,12 @@ class PriceTracking():
             except:
                 diff = 0
         
-            if diff < 0:
+            if new_prices_zero[i] == 0:
+                self.comments.append(f'⚠️ El articulo no esta disponible por el momento.')
+            elif diff < 0:
                 self.comments.append(f'✅ El articulo esta {diff}% mas bajo que el promedio de las ultimas semana.')
             elif diff > 0:
                 self.comments.append(f'❗ El articulo esta {diff}% mas alto que el promedio de las ultimas semanas.')
-            elif new_prices_zero[i] == 0:
-                self.comments.append(f'⚠️ El articulo no esta disponible por el momento.')
             else:
                 self.comments.append(f'❕ El articulo esta en el mismo precio que el promedio de las ultimas semanas.')
 
