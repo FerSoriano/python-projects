@@ -19,11 +19,14 @@ def get_selenium_driver():
     options.add_argument('disable-blink-features=AutomationControlled')
     options.add_experimental_option('excludeSwitches',['enable-automation'])
     options.add_experimental_option('prefs', prefs) 
-    options.add_argument('--disable-notifications') 
-    # options.add_argument('--headless')
-    # options.add_argument('--disable-gpu')
+
+    # options.add_argument('--disable-notifications') 
+    
+    options.add_argument('--headless')
+    options.add_argument('--disable-gpu')
 
     driver = webdriver.Chrome(service=service,options=options)
+    # driver.minimize_window()
     return driver
 
 
