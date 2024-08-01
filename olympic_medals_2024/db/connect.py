@@ -11,7 +11,7 @@ class DatabaseConection():
             with psycopg2.connect(**self.config) as self.conn:
                 print('Connected to the PostgreSQL server.')
                 return self.conn
-        except (Exception. psycopg2.DatabaseError ) as error:
+        except (Exception, psycopg2.DatabaseError ) as error:
             print(error)
             print('Error: connect()')
             exit()
