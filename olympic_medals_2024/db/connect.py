@@ -86,7 +86,8 @@ class DatabaseConection():
                     bronze INTEGER,
                     total INTEGER,
                     execution_date date not null,
-                    is_active INTEGER not null
+                    is_active INTEGER not null,
+                    country_id INTEGER
                 );
                 """)
                 self.conn.commit()
@@ -183,23 +184,68 @@ class DatabaseConection():
                             bronze,
                             total,
                             execution_date,
-                            is_active
+                            is_active,
+                            country_id
                         )
                             SELECT
                                 rank, 
-                                country,
+                                m.country,
                                 gold,
                                 silver,
                                 bronze,
                                 total,
                                 execution_date,
-                                1 as is_active
-                            FROM stage.medallero;
+                                1 as is_active,
+                                c.id as "country_id"
+                            FROM stage.medallero m
+                            LEFT JOIN edw.countries c 
+		                        ON c.country = m.country;
                     """)
                 self.conn.commit()
                 print("Data inserted successfully into edw.medallero.")
         except (Exception, psycopg2.DatabaseError) as error:
             print(error)
             print('Error: insert_to_edw_table_medallero()')
+            self.conn.rollback()
+            exit()
+
+    def create_edw_table_countries(self):
+        """ Create Country table in the database """
+        try:
+            with self.conn.cursor() as cursor:
+                cursor.execute("""
+                CREATE TABLE IF NOT EXISTS edw.countries (
+                    id SERIAL PRIMARY KEY,
+                    country varchar(255) not null
+                );
+                """)
+                self.conn.commit()
+                print("Table edw.Countries created successfully.")
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+            print('Error: create_edw_table_countries()')
+            self.conn.rollback()
+            exit()
+
+    def insert_to_edw_table_countries(self):
+        """ Insert into EDW table """
+        try:
+            with self.conn.cursor() as cursor:
+                cursor.execute(f"""
+                    INSERT INTO edw.countries (country)
+                    SELECT DISTINCT country 
+                    FROM stage.medallero m
+                    WHERE NOT EXISTS (
+                        SELECT 1
+                        FROM edw.countries c
+                        WHERE c.country = m.country
+                        )
+                    ORDER BY 1 ASC;
+                    """)
+                self.conn.commit()
+                print("Data inserted successfully into edw.countries.")
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+            print('Error: insert_to_edw_table_countries()')
             self.conn.rollback()
             exit()
