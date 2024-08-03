@@ -20,6 +20,7 @@ if CREATE_SCHEMAS:
 if CREATE_TABLES:
     db.create_stage_table_executionLog()
     db.create_stage_table_medallero()
+    db.create_edw_table_countries()
     db.create_edw_table_medallero()
 
 last_execution = db.get_last_execution()
@@ -46,6 +47,8 @@ if RUN_ETL:
     db.insert_to_stage_table_medallero(df=df)
     # Insertar Execution Log
     db.insert_to_stage_table_executionlog(today)
+    # Insertar Stage
+    db.insert_to_edw_table_countries()
     # Actualizar Is_Active a 0
     db.update_edw_table_medallero()
     # Insertar en EDW
