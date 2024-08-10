@@ -39,7 +39,7 @@ if TEST_CSV:
 if RUN_ETL:
     medals = Medals()
     medals.get_response()
-    df = medals.get_medals()
+    df = medals.get_medals(today)
 
     # Truncar Stage
     db.truncate_stage_table_medallero()
