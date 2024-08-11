@@ -50,7 +50,7 @@ class Medals():
             # Crear DataFrame
             self.medallero_df = pd.DataFrame(medals_list ,columns=['Gold', 'Silver', 'Bronze'])
             # Se agregan los paises al DataFrame
-            countries = self.get_by_span('span.elhe7kv5.emotion-srm-uu3d5n')
+            countries = self.get_by_span('span.euzfwma5.emotion-srm-uu3d5n')
             self.medallero_df.insert(0,'Country', countries, True)
 
             # Obtener el total de medallas
