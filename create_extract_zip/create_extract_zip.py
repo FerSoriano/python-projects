@@ -7,7 +7,7 @@ class Zip():
     def __init__(self, option: str, path: str) -> None:
         """
         option: create or extract \n
-        path: Path where is the file / directory
+        path: where the file / directory is located
         """
         self.option = option
         self.path = path
