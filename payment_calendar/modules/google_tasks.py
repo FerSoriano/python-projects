@@ -35,7 +35,8 @@ class GoogleTaskManager():
         with open("./modules/token.json", "w") as token:
           token.write(creds.to_json())
     except:
-       email.sendFailedNotification("Error al autenticar.")
+       email.sendFailedNotification("Error al autenticar. Renovar credenciales.")
+       exit()
 
     try:
       return build("tasks", "v1", credentials=creds)
