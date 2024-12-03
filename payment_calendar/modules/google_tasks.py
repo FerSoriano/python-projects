@@ -17,32 +17,51 @@ class GoogleTaskManager():
   def __init__(self):
     self.service = self._authenticate()
 
-  def _authenticate(self) -> None:
-    creds = None
-    try:
-      if os.path.exists("./modules/token.json"):
-        creds = Credentials.from_authorized_user_file("./modules/token.json", SCOPES)
+  def _authenticate(self):
+        creds = None
+        try:
+            # Intentar cargar credenciales desde un archivo
+            if os.path.exists("./modules/token.json"):
+                creds = Credentials.from_authorized_user_file("./modules/token.json", SCOPES)
 
-      if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-          creds.refresh(Request())
-        else:
-          flow = InstalledAppFlow.from_client_secrets_file(
-              "./modules/credentials.json", SCOPES
-          )
-          creds = flow.run_local_server(port=0)
-        # Save the credentials for the next run
-        with open("./modules/token.json", "w") as token:
-          token.write(creds.to_json())
-    except:
-       email.sendFailedNotification("Error al autenticar. Renovar credenciales.")
-       exit()
+            # Si no son válidas, intentar refrescar o solicitar nuevas credenciales
+            if not creds or not creds.valid:
+                if creds and creds.expired and creds.refresh_token:
+                    try:
+                        creds.refresh(Request())
+                    except Exception as refresh_error:
+                        email.sendFailedNotification(
+                            f"Error al renovar el token: {refresh_error}. Solicitando nueva autorización."
+                        )
+                        creds = self._request_new_credentials()
+                else:
+                    creds = self._request_new_credentials()
 
-    try:
-      return build("tasks", "v1", credentials=creds)
-    except HttpError as err:
-      print(err)
-      email.sendFailedNotification(err)
+                # Guardar el nuevo token
+                with open("./modules/token.json", "w") as token:
+                    token.write(creds.to_json())
+
+            # Construir el servicio
+            return build("tasks", "v1", credentials=creds)
+
+        except Exception as e:
+            error_message = f"Error al autenticar: {e}"
+            print(error_message)
+            email.sendFailedNotification(error_message)
+            raise
+
+  def _request_new_credentials(self):
+        """Solicitar nuevas credenciales al usuario"""
+        try:
+            flow = InstalledAppFlow.from_client_secrets_file(
+                "./modules/credentials.json", SCOPES
+            )
+            return flow.run_local_server(port=0)
+        except Exception as e:
+            error_message = f"Error al solicitar nuevas credenciales: {e}"
+            print(error_message)
+            email.sendFailedNotification(error_message)
+            raise
 
   def getTasksID(self, task_list_name:str) -> list:
     try:
