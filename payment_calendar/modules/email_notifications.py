@@ -44,7 +44,7 @@ class EmailNotification():
         password = os.getenv('PASSWORD')            
         subject = f"FAILED in the Google tasks process."
         
-        print(f"Error en la ejecucion. Enviando notificacion...")
+        print(f"Algo salio mal. Enviando detalle por correo...")
 
         message = MIMEMultipart()
         message["From"] = sender_email
