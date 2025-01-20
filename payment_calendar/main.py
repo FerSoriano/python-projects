@@ -5,6 +5,7 @@ WORKBOOK = 'Gastos Mensuales 2024'
 WORKSHEET = 'Control Pagos'
 HEADERS = ['Tipo', 'Concepto', 'Fecha', 'Fecha Pago', 'Semana', 'Monto', 'Comentarios', 'Pagado']
 LIST_NAME = 'Mis tareas'
+PAYMENT_TYPES = ['Tarjetas', 'Carro', 'Estudios', 'Mantenimiento']
 
 week_num = datetime.datetime.today().isocalendar()[1]
 
@@ -15,7 +16,7 @@ email = EmailNotification()
 googleSheetData.setConection()
 df = googleSheetData.getRecords()
 try:
-    df = df[(df['Tipo']=='Tarjetas') & (df['Semana']==week_num)]
+    df = df[(df['Tipo'].isin(PAYMENT_TYPES)) & (df['Semana']==week_num)]
 except:
     email.sendFailedNotification("Error al obtener el Dataframe.")
     exit()
