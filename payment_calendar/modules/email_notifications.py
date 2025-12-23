@@ -12,6 +12,10 @@ class EmailNotification():
         receiver_email = os.getenv('RECEIVER')
         password = os.getenv('PASSWORD')            
         subject = f"New payments added in Google tasks"
+        
+        if not sender_email or not receiver_email or not password:
+            print("Error: Missing required environment variables (EMAIL, RECEIVER, PASSWORD)")
+            exit()
                       
         if body == "":
             body = "Esta semana no se agregaron nuevas tareas."
@@ -43,6 +47,10 @@ class EmailNotification():
         receiver_email = os.getenv('RECEIVER')
         password = os.getenv('PASSWORD')            
         subject = f"FAILED in the Google tasks process."
+        
+        if not sender_email or not receiver_email or not password:
+            print("Error: Missing required environment variables (EMAIL, RECEIVER, PASSWORD)")
+            exit()
         
         print(f"Algo salio mal. Enviando detalle por correo...")
 

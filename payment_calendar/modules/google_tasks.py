@@ -1,6 +1,7 @@
 from datetime import datetime
 import os.path
 import inspect
+from typing import Optional, Any
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -63,37 +64,35 @@ class GoogleTaskManager():
             email.sendFailedNotification(error_message)
             raise
 
-  def getTasksID(self, task_list_name:str) -> list:
+  def getTasksID(self, task_list_name:str) -> Optional[str]:
     try:
-      results = self.service.tasklists().list(maxResults=10).execute()
-      items = results.get("items", [])
-      task_list = []
+        results = self.service.tasklists().list(maxResults=20).execute()
+        items: list[dict[str, Any]] = results.get("items", [])
 
-      if not items:
-        print("No task lists found.")
-        return
+        if not items:
+            print("No task lists found.")
+            return None
 
-      for item in items:
-        task = {
-          "task_name":item['title'],
-          "task_id":item['id']
-        }
-        task_list.append(task)
+        for item in items:
+            if item.get('title') == task_list_name:
+                return item.get('id')
       
-      for task in task_list:
-        if task['task_name'] == task_list_name:
-          return task['task_id']
-      
-      print("List name not found.")
-    except:
-       method_name = inspect.currentframe().f_code.co_name # Obtener el nombre del método actual
-       email.sendFailedNotification(f"Error obteniendo el TaskID. Error en el metodo: {method_name}")
+        print(f"La lista '{task_list_name}' no fue encontrada.")
+        return None
+    except Exception as e:
+        # Obtener el nombre del método actual
+        frame = inspect.currentframe()
+        method_name = frame.f_code.co_name if frame else "Unknown"
+        error_msg = f"Error obteniendo el TaskID. Error en el metodo: {method_name}. Error: {str(e)}"
+        print(error_msg)
+        email.sendFailedNotification(error_msg)
+
 
   def getTasks(self, task_list_name: str) -> list:
     task_list_id = self.getTasksID(task_list_name)
     if not task_list_id:
         print("La lista no fue encontrada.")
-        return
+        return []
 
     try:
       results = self.service.tasks().list(tasklist=task_list_id).execute()
@@ -101,7 +100,7 @@ class GoogleTaskManager():
 
       if not tasks:
           print("No tasks found in the list.")
-          return []
+          return tasks
 
       for task in tasks:
           task_title = task.get('title')

@@ -20,7 +20,9 @@ class GoogleConnection():
         try:
             self.gc = gspread.service_account(filename=self.service_account)
         except gspread.exceptions.APIError as e:
-            method_name = inspect.currentframe().f_code.co_name # Obtener el nombre del método actual
+            # Obtener el nombre del método actual
+            frame = inspect.currentframe()
+            method_name = frame.f_code.co_name if frame else "Unknown"
             email.sendFailedNotification(f"Error en la conexion a Google Sheets: {e}\nError en el metodo: {method_name}")
             print(f"Error de API de Google Sheets: {e}")
 
@@ -37,7 +39,7 @@ class ReadGoogleSheet(GoogleConnection):
         self.today = str(datetime.today().strftime('%Y-%m-%d'))
         self.datetime = datetime.today().strftime("%d/%m/%Y %H:%M:%S")
 
-    def getRecords(self) -> pd.DataFrame:
+    def getRecords(self) -> pd.DataFrame | None:
         try:
             wb = self.gc.open(self.workbook)
             ws = wb.worksheet(self.worksheet)
@@ -45,6 +47,8 @@ class ReadGoogleSheet(GoogleConnection):
             self.df = pd.DataFrame(records)
             return self.df
         except gspread.exceptions.APIError as e:
-            method_name = inspect.currentframe().f_code.co_name # Obtener el nombre del método actual
+            # Obtener el nombre del método actual
+            frame = inspect.currentframe()
+            method_name = frame.f_code.co_name if frame else "Unknown"
             email.sendFailedNotification(f"Error al intentar obtener los datos de la tabla en Google Sheet: {e}\nError en el metodo: {method_name}")
             print(f"Error de API de Google Sheets: {e}")
