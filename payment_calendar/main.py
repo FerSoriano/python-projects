@@ -1,7 +1,7 @@
 import datetime
 from modules import GoogleTaskManager, ReadGoogleSheet, EmailNotification
 
-WORKBOOK = 'Gastos Mensuales 2024'
+WORKBOOK = 'Gastos Mensuales'
 WORKSHEET = 'Control Pagos'
 HEADERS = ['Tipo', 'Concepto', 'Fecha', 'Fecha Pago', 'Semana', 'Monto', 'Comentarios', 'Pagado']
 LIST_NAME = 'Mis tareas'
