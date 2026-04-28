@@ -56,7 +56,12 @@ class GoogleTaskManager():
             flow = InstalledAppFlow.from_client_secrets_file(
                 "./modules/credentials.json", SCOPES
             )
-            return flow.run_local_server(port=0)
+            # return flow.run_local_server(port=0)
+            return flow.run_local_server(
+                port=0,
+                access_type="offline",
+                prompt="consent"
+            )
         except Exception as e:
             error_message = f"Error al solicitar nuevas credenciales: {e}"
             print(error_message)
