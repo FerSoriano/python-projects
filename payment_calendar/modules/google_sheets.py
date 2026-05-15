@@ -2,6 +2,7 @@ import inspect
 import pandas as pd
 from datetime import datetime
 import gspread
+import os
 
 from dotenv import load_dotenv
 from .email_notifications import EmailNotification
@@ -13,19 +14,27 @@ class GoogleConnection():
     """
     Se settea la cuenta de servicio de google.
     """
-    def __init__(self) -> None:
-        self.service_account = './key/key.json'
+    def __init__(self):
+        self.gservice = self._authenticate()
 
-    def setConection(self):
+    def _authenticate(self):
+        key_path = os.getenv('GOOGLE_SHEETS_SERVICE_ACCOUNT')
+        if not key_path:
+            raise ValueError("Error: La variable de entorno 'GOOGLE_SHEETS_SERVICE_ACCOUNT' no está definida.")
+        
         try:
-            self.gc = gspread.service_account(filename=self.service_account)
+            return gspread.service_account(filename=key_path)
         except gspread.exceptions.APIError as e:
-            # Obtener el nombre del método actual
             frame = inspect.currentframe()
             method_name = frame.f_code.co_name if frame else "Unknown"
-            email.sendFailedNotification(f"Error en la conexion a Google Sheets: {e}\nError en el metodo: {method_name}")
+            body = f"Error en la conexion a Google Sheets: {e}\nError en el metodo: {method_name}"
+            error_message = "Error al autenticar la cuenta de servicio."
+            email.sendFailedNotification(
+                subject=error_message,
+                body=body
+            )
             print(f"Error de API de Google Sheets: {e}")
-
+            raise
 
 class ReadGoogleSheet(GoogleConnection):
     """
@@ -41,14 +50,18 @@ class ReadGoogleSheet(GoogleConnection):
 
     def getRecords(self) -> pd.DataFrame | None:
         try:
-            wb = self.gc.open(self.workbook)
+            wb = self.gservice.open(self.workbook)
             ws = wb.worksheet(self.worksheet)
             records = ws.get_all_records(expected_headers=self.headers, head=2)
             self.df = pd.DataFrame(records)
             return self.df
         except gspread.exceptions.APIError as e:
-            # Obtener el nombre del método actual
             frame = inspect.currentframe()
             method_name = frame.f_code.co_name if frame else "Unknown"
-            email.sendFailedNotification(f"Error al intentar obtener los datos de la tabla en Google Sheet: {e}\nError en el metodo: {method_name}")
+            body = f"Error al intentar obtener los datos de la tabla en Google Sheet: {e}\nError en el metodo: {method_name}"
+            error_message = "Error: Conexion Google Sheets"
+            email.sendFailedNotification(
+                subject=error_message,
+                body=body
+            )
             print(f"Error de API de Google Sheets: {e}")
