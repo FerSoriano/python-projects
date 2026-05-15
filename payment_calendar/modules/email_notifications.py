@@ -7,11 +7,12 @@ class EmailNotification():
     def __init__(self):
         pass
 
-    def sendNotification(self, body:str) -> None:
+    def sendNotification(self, body: str, subject: str = "") -> None:
         sender_email = os.getenv('EMAIL')
         receiver_email = os.getenv('RECEIVER')
-        password = os.getenv('PASSWORD')            
-        subject = f"New payments added in Google tasks"
+        password = os.getenv('PASSWORD')
+        if not subject:            
+            subject = f"New payments added in your Google Calendar"
         
         if not sender_email or not receiver_email or not password:
             print("Error: Missing required environment variables (EMAIL, RECEIVER, PASSWORD)")
@@ -42,11 +43,11 @@ class EmailNotification():
             exit()
 
     
-    def sendFailedNotification(self, body:str) -> None:
+    def sendFailedNotification(self, subject:str, body:str) -> None:
         sender_email = os.getenv('EMAIL')
         receiver_email = os.getenv('RECEIVER')
         password = os.getenv('PASSWORD')            
-        subject = f"FAILED in the Google tasks process."
+        # subject = f"FAILED in the Google tasks process."
         
         if not sender_email or not receiver_email or not password:
             print("Error: Missing required environment variables (EMAIL, RECEIVER, PASSWORD)")
