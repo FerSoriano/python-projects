@@ -3,11 +3,13 @@ import pandas as pd
 from datetime import datetime
 import gspread
 import os
+import logging
 
 from dotenv import load_dotenv
 from .email_notifications import EmailNotification
 
 email = EmailNotification()
+logger = logging.getLogger(__name__)
 load_dotenv()
 
 class GoogleConnection():
@@ -33,7 +35,7 @@ class GoogleConnection():
                 subject=error_message,
                 body=body
             )
-            print(f"Error de API de Google Sheets: {e}")
+            logger.exception("Error de API de Google Sheets: %s", e)
             raise
 
 class ReadGoogleSheet(GoogleConnection):
@@ -64,4 +66,4 @@ class ReadGoogleSheet(GoogleConnection):
                 subject=error_message,
                 body=body
             )
-            print(f"Error de API de Google Sheets: {e}")
+            logger.exception("Error de API de Google Sheets: %s", e)

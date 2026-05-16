@@ -1,6 +1,7 @@
 from datetime import datetime
 import os.path
 import inspect
+import logging
 from typing import Optional, Any
 
 from google.auth.transport.requests import Request
@@ -14,6 +15,7 @@ from .email_notifications import EmailNotification
 
 SCOPES = ["https://www.googleapis.com/auth/tasks"]
 email = EmailNotification()
+logger = logging.getLogger(__name__)
 
 
 class GoogleTaskManager():
@@ -52,7 +54,7 @@ class GoogleTaskManager():
 
         except Exception as e:
             body = f"Error al autenticar: {e}"
-            print(body)
+            logger.exception(body)
             email.sendFailedNotification(
                 subject="Payment Calendar: FAILED in the Google tasks process.",
                 body=body
@@ -74,7 +76,7 @@ class GoogleTaskManager():
             )
         except Exception as e:
             body = f"Error al solicitar nuevas credenciales: {e}"
-            print(body)
+            logger.exception(body)
             email.sendFailedNotification(
                 subject="Payment Calendar: FAILED in the Google tasks process.",
                 body=body
@@ -88,21 +90,21 @@ class GoogleTaskManager():
         items: list[dict[str, Any]] = results.get("items", [])
 
         if not items:
-            print("No task lists found.")
+            logger.warning("No se encontraron listas de 'Tasks' activas.")
             return None
 
         for item in items:
             if item.get('title') == task_list_name:
                 return item.get('id')
       
-        print(f"La lista '{task_list_name}' no fue encontrada.")
+        logger.warning("La lista '%s' no fue encontrada.", task_list_name)
         return None
     except Exception as e:
         # Obtener el nombre del método actual
         frame = inspect.currentframe()
         method_name = frame.f_code.co_name if frame else "Unknown"
         body = f"Error obteniendo el TaskID. Error en el metodo: {method_name}. Error: {str(e)}"
-        print(body)
+        logger.exception(body)
         email.sendFailedNotification(
             subject="Payment Calendar: FAILED in the Google tasks process.",
             body=body
@@ -112,7 +114,7 @@ class GoogleTaskManager():
   def getTasks(self, task_list_name: str) -> list:
     task_list_id = self.getTasksID(task_list_name)
     if not task_list_id:
-        print("La lista no fue encontrada.")
+        logger.warning("La lista no fue encontrada.")
         return []
 
     try:
@@ -120,7 +122,7 @@ class GoogleTaskManager():
       tasks = results.get("items", [])
 
       if not tasks:
-          print("No tasks found in the list.")
+          logger.info("No tasks found in the list.")
           return tasks
 
       for task in tasks:
@@ -134,14 +136,19 @@ class GoogleTaskManager():
               due_date_formatted = due_date.strftime('%Y-%m-%d')
           else:
               due_date_formatted = "No deadline"
-          print(f"Tarea: {task_title}, Estado: {task_status}, Fecha límite: {due_date_formatted}")
+          logger.info(
+              "Tarea: %s, Estado: %s, Fecha límite: %s",
+              task_title,
+              task_status,
+              due_date_formatted,
+          )
       return tasks
     
     except Exception as e:
         frame = inspect.currentframe()
         method_name = frame.f_code.co_name if frame else "Unknown"
         body = f"Error obteniendo las tareas. Error en el metodo: {method_name}. Error: {e}"
-        print(body)
+        logger.exception(body)
         email.sendFailedNotification(
             subject="Payment Calendar: FAILED in the Google tasks process.",
             body=body
@@ -163,11 +170,11 @@ class GoogleTaskManager():
     try:
         due_date_iso = datetime.strptime(due_date, '%Y-%m-%d').isoformat() + 'Z'
     except ValueError:
-        print("El formato de fecha debe ser YYYY-MM-DD.")
+        logger.error("El formato de fecha debe ser YYYY-MM-DD.")
         frame = inspect.currentframe()
         method_name = frame.f_code.co_name if frame else "Unknown"
         body = f"Error en el metodo: {method_name}\nEl formato de fecha debe ser YYYY-MM-DD."
-        print(body)
+        logger.exception(body)
         email.sendFailedNotification(
             subject="Payment Calendar: FAILED in the Google tasks process.",
             body=body
@@ -180,7 +187,6 @@ class GoogleTaskManager():
         'notes': notes
     }
     
-    # print(self.tasks)
     for task in tasks:
         task_due = datetime.fromisoformat(task['due'].replace("Z", "")).isoformat() + 'Z' # normalizar la fecha sin milisegundos
         if (task['title'] == new_task['title']) and (task_due == new_task['due']):
@@ -195,7 +201,7 @@ class GoogleTaskManager():
         frame = inspect.currentframe()
         method_name = frame.f_code.co_name if frame else "Unknown"
         body = f"Ocurrió un error al crear la tarea: {error}\nError en el metodo: {method_name}"
-        print(body)
+        logger.exception(body)
         email.sendFailedNotification(
             subject="Payment Calendar: FAILED in the Google tasks process.",
             body=body
@@ -206,4 +212,3 @@ class GoogleTaskManager():
 if __name__ == "__main__":
   google = GoogleTaskManager()
   list_name = "Mis tareas"
-
