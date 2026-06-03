@@ -76,6 +76,14 @@ class GoogleCalendarManager(GoogleCalendarService):
         ).execute()
         return event
 
+    def update_event(self, event_data, calendar_id, event_id):
+        event = self.service.events().update(
+            calendarId=calendar_id,
+            eventId=event_id,
+            body=event_data
+        ).execute()
+        return event
+
     def get_event_by_id(self, calendar_id, event_id):
         try:
             return self.service.events().get(
@@ -171,6 +179,19 @@ class GoogleCalendarManager(GoogleCalendarService):
             event_created = True
             msg = f"Tarea '{event_name}' creada con éxito para el dia: {due_date}"
         else:
-            msg = f"Tarea {event_name} ya registrado"
+            existing_start_date = existing_event.get("start", {}).get("date")
+            existing_notes = existing_event.get("description", "")
+            
+            if existing_start_date == start_date_obj.strftime("%Y-%m-%d") and existing_notes == notes:
+                event_created = False
+                msg = f"Tarea '{event_name}' ya registrada y sin cambios para el dia: {due_date}"
+            else:
+                self.update_event(
+                    event_data=event_data,
+                    calendar_id=CALENDAR_ID,
+                    event_id=existing_event["id"]
+                )
+                event_created = True
+                msg = f"Tarea '{event_name}' actualizada con éxito para el dia: {due_date}"
 
         return event_created, msg
