@@ -26,10 +26,10 @@ except FileNotFoundError:
     logger.exception("Error crítico: No se encontró el archivo en %s", CONFIG_PATH)
 
 
-def main():
+def main(DEBUG: bool = False):
     week_num = datetime.datetime.today().isocalendar()[1]
 
-    google_sheet_data = ReadGoogleSheet(workbook=WORKBOOK,worksheet=WORKSHEET,headers=HEADERS)
+    google_sheet_data = ReadGoogleSheet(workbook=WORKBOOK, worksheet=WORKSHEET, headers=HEADERS)
     email = EmailNotification()
 
     google_tasks = None
@@ -44,27 +44,33 @@ def main():
     df = google_sheet_data.getRecords()
 
     if df is None:
-        email.sendNotification(
-            subject="Payment Calendar: Dataframe vacio",
-            body="No pudo obtener informacion de Google Sheets."
-        )
+        msg = "No pudo obtener informacion de Google Sheets."
+        if not DEBUG:
+            email.sendNotification(
+                subject="Payment Calendar: Dataframe vacio",
+                body=msg
+            )
+        logger.warning(msg)
         return 
 
     body = ""
     
     try:
-        df = df[(df['Tipo'].isin(PAYMENT_TYPES)) & (df['Semana']==week_num)]
+        df = df[(df['Tipo'].isin(PAYMENT_TYPES)) & (df['Semana'] == week_num)]
     except:
-        email.sendFailedNotification(
-            subject="Payment Calendar: ERROR",
-            body="Error al obtener el Dataframe."
-        )
+        msg = "Error al obtener el Dataframe."
+        if not DEBUG:
+            email.sendFailedNotification(
+                subject="Payment Calendar: ERROR",
+                body=msg
+            )
+        logger.exception(msg)
         return 
 
-    for i,row in df.iterrows():
-        task_name = f'Pagar {row['Concepto']}'
+    for i, row in df.iterrows():
+        task_name = f'Pagar {row["Concepto"]}'
         due_date = row['Fecha Pago']
-        notes = f'Total a pagar: {row['Monto']}'
+        notes = f'Total a pagar: {row["Monto"]}'
         
         if google_tasks is not None:
             create_task = google_tasks.createTask(
@@ -90,14 +96,18 @@ def main():
             )
 
             if create_event[0]:
+                logger.info(create_event[1])
                 body += create_event[1]
                 body += '\n'
+            else:
+                logger.warning(create_event[1])
                 
-    email.sendNotification(body=body)
+    if not DEBUG:
+        email.sendNotification(body=body)
 
     return
 
 
 if __name__ == "__main__":
     configure_logging()
-    main()
+    main(DEBUG=False)
